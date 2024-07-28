@@ -1,6 +1,6 @@
 import os
 import threading
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response
 import requests
 import random
 import string
@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor as tred
 import uuid
 import sys
 from fake_useragent import UserAgent
+import time
 
 app = Flask(__name__)
 ua = UserAgent()
@@ -52,6 +53,19 @@ def results_cp():
         cp_results = []
     
     return '<br>'.join(cp_results)
+
+@app.route('/live')
+def live():
+    return render_template('live.html')
+
+@app.route('/stream')
+def stream():
+    def generate():
+        while True:
+            time.sleep(1)
+            yield f"data: {len(oks)} successful, {len(cps)} checkpoints, {loop} attempts\n\n"
+    
+    return Response(generate(), mimetype='text/event-stream')
 
 def start_cloning(sim_code, limit):
     global loop
