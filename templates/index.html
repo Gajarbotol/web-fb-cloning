@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR.DIPTO's Web-Based FB Cloning Tool</title>
+    <style>
+        body {
+            background-color: black;
+            color: green;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        h2 {
+            text-align: center;
+        }
+        form {
+            margin: 0 auto;
+            width: 300px;
+            text-align: center;
+        }
+        input[type="text"], input[type="submit"] {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 10px;
+            background-color: #333;
+            color: green;
+            border: 1px solid green;
+            border-radius: 5px;
+        }
+        a {
+            color: green;
+            display: block;
+            text-align: center;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+    <h2>Welcome to MR.DIPTO's Web-Based FB Cloning Tool</h2>
+    <form action="/clone" method="post">
+        SIM Code: <input type="text" name="sim_code"><br>
+        Limit: <input type="text" name="limit"><br>
+        <input type="submit" value="Start Cloning">
+    </form>
+    <h2>View Results</h2>
+    <a href="/results/ok">View OK Results</a><br>
+    <a href="/results/cp">View CP Results</a>
+</body>
+</html>
